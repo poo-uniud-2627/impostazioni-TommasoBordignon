@@ -27,8 +27,31 @@ public record Impostazioni(int puntiPerVincere, int scartoMinimo, int velocitaPa
      * non è fra 1 e 10, o se velocitaPalla non è fra 1 e 20 (estremi compresi). Il messaggio
      * dice quale valore è sbagliato e perché.
      */
+
+    private static boolean isPuntiValidi(int punti) {
+        return punti >= 1 && punti <= 99;
+    }
+
+    private static boolean isScartoValido(int scarto) {
+        return scarto >= 1 && scarto <= 10;
+    }
+
+    private static boolean isVelocitaValida(int velocita) {
+        return velocita >= 1 && velocita <= 20;
+    }
+
+
     public Impostazioni {
-        // scrivete qui
+        if (!isPuntiValidi(puntiPerVincere)) {
+            throw new IllegalArgumentException(
+                    "puntiPerVincere: " + puntiPerVincere + " deve essere compreso tra 1 e 99");
+        }
+        if (!isScartoValido(scartoMinimo)) {
+            throw new IllegalArgumentException("scartoMinimo: " + scartoMinimo + " deve essere compreso tra 1 e 10");
+        }
+        if (!isVelocitaValida(velocitaPalla)) {
+            throw new IllegalArgumentException("velocitaPalla: " + velocitaPalla + " deve essere compresa tra 1 e 20");
+        }
     }
 
     /**
@@ -51,7 +74,118 @@ public record Impostazioni(int puntiPerVincere, int scartoMinimo, int velocitaPa
      * Se ci sono errori in più righe, il messaggio è quello della riga più in alto.
      */
     public static Impostazioni leggi(List<String> righe) {
-        return STANDARD; // scrivete qui
+        //return STANDARD; // scrivete qui
+        int punti = STANDARD.puntiPerVincere();
+        int scarto = STANDARD.scartoMinimo();
+        int velocita = STANDARD.velocitaPalla();
+
+
+        boolean vistoPunti = false;
+        boolean vistoScarto = false;
+        boolean vistoVelocita = false;
+
+ 
+        for (int i = 0; i < righe.size(); i++) {
+            
+            int nRiga = i + 1; 
+            String riga = righe.get(i).trim();
+
+            if (riga.isEmpty() || riga.startsWith("#")) { continue; }
+            int uguale = riga.indexOf('=');
+            if(uguale == -1){
+                throw new IllegalArgumentException(
+                    "riga " + nRiga + ": manca il segno ="
+                );
+            }
+            String chiave = riga.substring(0, uguale).trim();
+            String valore = riga.substring(uguale+1).trim();
+
+
+            if(chiave.equals("puntiPerVincere")){
+
+                if(vistoPunti){
+                    throw new IllegalArgumentException(
+                        "riga " + nRiga + ": è già stata controllata"
+                    );
+                }
+
+                
+                int val; //valore che verrà assegnato se passa tutti i controlli
+                try {
+                    val = Integer.parseInt(valore);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException(
+                            "riga " + nRiga + ": ha un valore nn intero");
+                }
+
+                if(!isPuntiValidi(val)){
+                    throw new IllegalArgumentException(
+                            "riga " + nRiga + ": nn è nell'intervallo"
+                    );
+
+                }
+
+
+                punti = val;
+                vistoPunti = true;
+            }else if(chiave.equals("scartoMinimo")){
+                if (vistoScarto) {
+                    throw new IllegalArgumentException(
+                            "riga " + nRiga + ": è già stata controllata");
+                }
+
+                int scar; // valore che verrà assegnato se passa tutti i controlli
+                try {
+                    scar = Integer.parseInt(valore);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException(
+                            "riga " + nRiga + ": ha un valore nn intero");
+                }
+
+                if (!isScartoValido(scar)) {
+                    throw new IllegalArgumentException(
+                            "riga " + nRiga + ": nn è nell'intervallo");
+
+                }
+
+                scarto = scar;
+                vistoScarto = true;
+
+            }else if(chiave.equals("velocitaPalla")){
+                if (vistoVelocita) {
+                    throw new IllegalArgumentException(
+                            "riga " + nRiga + ": è già stata controllata");
+                }
+
+                int vel; // valore che verrà assegnato se passa tutti i controlli
+                try {
+                    vel = Integer.parseInt(valore);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException(
+                            "riga " + nRiga + ": ha un valore nn intero");
+                }
+
+                if (!isVelocitaValida(vel)) {
+                    throw new IllegalArgumentException(
+                            "riga " + nRiga + ": nn è nell'intervallo");
+
+                }
+
+                velocita = vel;
+                vistoVelocita = true;
+
+            }else{
+                throw new IllegalArgumentException(
+                        "riga " + nRiga + ": chiave con valore illegale"
+                );
+            }
+
+
+
+
+        }
+
+        return new Impostazioni(punti, scarto, velocita);
     }
 
     /**
